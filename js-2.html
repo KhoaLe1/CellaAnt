@@ -4,10 +4,10 @@
 <link rel="stylesheet" href="../assets/styles.css">
 </head>
 <body><h1>Playing the HTML canvas</h1>
+  <pre id="output"></pre>
 <h4>Time-stamp: <2019-01-21 20:11:03 Chuck Siska></h4>
-
 </body>
-<script src="../assets/draw-stuff.js"></script>
+<script src="../assets/tools.js"></script>
 <script>
 var rn = 0
 //var sane = 0;
@@ -19,6 +19,7 @@ langtonant({}, {
  pixlsize: 10,
  interval: 5
 });
+
 function langtonant(antx, optx) {
 
 	var x, y, i;
@@ -69,91 +70,115 @@ function langtonant(antx, optx) {
 
   draw_grid( cont, 10, 50, 'white', 'yellow' );
 	// initialise pixels
+
 	var pixlblac = cont.createImageData(opts.pixlsize,opts.pixlsize);
-	for (i = 0; i < pixlblac.data.length; i+= 1) {
+	for (i = 0; i < pixlblac.data.length; i+= 4) {
     // i = 0; i < (125) ; i+=4
     pixlblac.data[i+0] = 0;
     pixlblac.data[i+1] = 0;
     pixlblac.data[i+2] = 0;
-		//pixlblac.data[i+3] = 255; // data[3] = 255, data[6]
+		pixlblac.data[i+3] = 255; // data[3] = 255, data[6]
 	}
 
-	var pixlblue = cont.createImageData(opts.pixlsize,opts.pixlsize);
-	for (i = 0; i < pixlblue.data.length; i+=1) {
+	var pixlred = cont.createImageData(opts.pixlsize,opts.pixlsize);
+	for (i = 0; i < pixlred.data.length; i+=4) {
+    pixlred.data[i+0] = 255;
+    pixlred.data[i+1] = 0;
+    pixlred.data[i+2] = 0;
+		pixlred.data[i+3] = 255;
+	}
+  var pixlyellow = cont.createImageData(opts.pixlsize,opts.pixlsize);
+	for (i = 0; i < pixlyellow.data.length; i+= 4) {
+    // i = 0; i < (125) ; i+=4
+    pixlyellow.data[i+0] = 255;
+    pixlyellow.data[i+1] = 255;
+    pixlyellow.data[i+2] = 0;
+		pixlyellow.data[i+3] = 255; // data[3] = 255, data[6]
+	}
+	
+  
+  var pixlblue = cont.createImageData(opts.pixlsize,opts.pixlsize);
+	for (i = 0; i < pixlblue.data.length; i+= 4) {
+    // i = 0; i < (125) ; i+=4
     pixlblue.data[i+0] = 0;
     pixlblue.data[i+1] = 0;
     pixlblue.data[i+2] = 255;
-		//pixlwhit.data[i+3] = 0;
-	}
-
-	var pixlred = cont.createImageData(opts.pixlsize, opts.pixlsize);
-	for(i = 0; i < pixlred.data.length; i+=1){
-		pixlred.data[i+0] = 255;
-		pixlred.data[i+0] = 0;
-		pixlred.data[i+0] = 0;
-	}
-
-	var pixlyellow = cont.createImageData(opts.pixlsize, opts.pixlsize);
-	for(i = 0; i < pixlyellow.data.length; i+=1){
-		pixlyellow.data[i+0] = 255;
-		pixlyellow.data[i+0] = 255;
-		pixlyellow.data[i+0] = 0;
+		pixlblue.data[i+3] = 255; // data[3] = 255, data[6]
 	}
 
 	// run simulation
 	function simulate() {
-	
     rn++;
-    var sane = true;
+    //var sane = true;
 		// iterate over ants
 		for (i = 0; i < ants.length; i ++) {
 			var n = ants[i];
+			var pixelData = cont.getImageData(n.x * 10,n.y * 10,1,1).data;
 
 			// invert, draw, turn
-			if (grid[n.x][n.y] == pixlblack) { // if position is at grid[40][40], black pixel
-				grid[n.x][n.y] = pixlred;
-				cont.putImageData(pixlblac, (n.x * 10) , (n.y * 10));
-				n.d++;
-			}else if(grid[n.x][n.y] == pixlred){
-				grid[n.x][n.y] = pixlyellow;
+			if (pixelData){ // if position is at grid[40][40], black pixel
+				//grid[n.x][n.y] = false; // if state is 0 flip color and change direction
+        		//  draw_triangle(cont,205,200,200,205,210,205);
 				cont.putImageData(pixlred, (n.x * 10) , (n.y * 10));
-				n.d++;
-			}else if(grid[n.x][n.y] == pixlyellow){
-				grid[n.x][n.y] = pixlblue;
-				cont.putImageData(pixlyellow, (n.x * 10) , (n.y * 10));
-				n.d--;
-			}else if(grid[n.x][n.y] == pixlblue){
-				grid[n.x][n.y] = pixlblack;
-				cont.putImageData(pixlblue, (n.x * 10) , (n.y * 10));
-				n.d--;
+				n.d++; // facing west, initial direction + 1, y++
+        		// starting black cell, d == 1(go up), change cell color to red,
+			 	if(pixelData[0] == 0 && pixelData[1] == 0 && pixelData[2] == 0){
+					cont.putImageData(pixlred, (n.x* 10) , (n.y * 10));
+					n.d++;
+				}else if(pixelData[0] == 255 && pixelData[1] == 0 && pixelData[2] == 0) {
+					//grid[n.x][n.y] = true; // else
+        			//  draw_triangle(cont,205,200,200,205,210,205);
+					cont.putImageData(pixlyellow, (n.x * 10) , (n.y * 10));
+					n.d++; //direction
+				}else if(pixelData[0] == 255 && pixelData[1] == 255 && pixelData[2] == 0){
+					cont.putImageData(pixlblue, (n.x* 10) , (n.y * 10));
+					n.d--;
+				}else if(pixelData[0] == 0 && pixelData[1] == 0 && pixelData[2] == 255){
+					cont.putImageData(pixlblack, (n.x* 10) , (n.y * 10));
+					n.d--;
+				}
+			}else{
+					cont.putImageData(pixlred, (n.x* 10) , (n.y * 10));
+					n.d++;
 			}
-
+      //cont.putImageData(pixlyellow,0,0);
 			// modulus wraparound
 			n.d += dirs.length;
 			n.d %= dirs.length;
 
 			// position + direction
 			n.x += dirs[n.d].x; // x += dirs[1].x
-      n.x -= dirs[n.d].x;
-			//n.y += dirs[n.d].y; // y += dits[1].y
+      //n.x -= dirs[n.d].x;
+			n.y += dirs[n.d].y; // y += dits[1].y
 
-			// sanity check
-			if (rn == 1)
-      			sane = false;
-      		else sane = true;
-		}
+//***********************CHECKING FOR COLOR
+			if (rn == 3)
+      {
+        sane = false;
+
+        //var pixelData = cont.getImageData(210,110, 1, 1).data;
+        //var pixelD = cont.getImageData(50,50,1,1).data;
+        //if(pixelData[0] == 0)
+       // cont.putImageData(pixlyellow,50,50); // (x,y)
+
+      }
+        else sane = true;
+		  }
 
 		// loop with interval
     //sane++;
 		if (sane == true) {
+      //return;
 			setTimeout(simulate, opts.interval);
 		}
-	}
 
+	}
 	simulate();
 }
 
-
+//if(pixelData[0] == 255) draw_triangle(context,205,200,200,205,210,205);
+//var pixelData = cont.getImageData(11,21, 1, 1).data;
+//var pixelD = cont.getImageData(5,5,1,1).data;
 
 </script>
 </html>
